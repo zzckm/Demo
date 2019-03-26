@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiyou100.dao.DepartmentDao">
+<!--结果集-->
+    <resultMap id="departmentMap" type="com.zhiyou100.model.Department" >
+        <id column="department_id" property="departmentId" jdbcType="INTEGER" />
+        <result column="department_name" property="departmentName" jdbcType="VARCHAR" />
+        <result column="department_desc" property="departmentDesc" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="TINYINT" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="creater" property="creater" jdbcType="INTEGER" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="updater" property="updater" jdbcType="INTEGER" />
+    </resultMap>
+    <sql id="selector">
+		select * from department
+	</sql>
+
+    <!--查询list-->
+    <select id="listDePart" parameterType="Department" resultMap="departmentMap">
+       select * from department
+    </select>
+<!--新增-->
+    <insert id="save" parameterType="Department" >
+       Insert into department (department_name,department_desc,create_time,creater) values
+        (#{departmentName},#{departmentDesc},#{createTime},#{creater})
+    </insert>
+    <!-- 通过ID查询一个用户 -->
+    <select id="findById" parameterType="Integer" resultMap="departmentMap">
+		select * from department where department_id=#{departmentId}
+	</select>
+    <!--部门下拉框-->
+    <select id="selectDown" resultMap="departmentMap">
+        	select department_id,department_name from department
+    </select>
+    <!--更新-->
+    <update id="update" parameterType="Department">
+		update department set department_name=#{departmentName},department_desc=#{departmentDesc},update_time=#{updateTime},updater=#{updater} where department_id=#{departmentId}
+	</update>
+    <!--删除-->
+    <delete id="deleteById" parameterType="Integer">
+		delete from department where department_id=#{departmentId}
+	</delete>
+</mapper>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiyou100.mapper.UserMapper">
+    <sql id="selector">
+		select * from user
+	</sql>
+
+    <!--通过用户名和密码查询-->
+    <select id="login" resultType="User">
+        <include refid="selector"></include> where username=#{username} and password=#{password}
+    </select>
+    <!--通过关键词查询-->
+    <select id="searchByKeyWord" parameterType="User" resultType="User">
+        <include refid="selector"/>
+        <where>
+            <if test="username!='' and username!=null">
+                and username like '%'#{keyword}'%'
+            </if>
+            <if test="mobile!='' and mobile!=null">
+                and mobile like '%'#{keyword}'%'
+            </if>
+            <if test="address!='' and address!=null">
+                and address like '%'#{keyword}'%'
+            </if>
+        </where>
+    </select>
+
+    <select id="searchByKeyWordNull" resultType="user">
+        	select user_id,username,department_id,role_id,mobile,email,update_time from user
+    </select>
+</mapper>

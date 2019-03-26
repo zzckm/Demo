@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiyou100.dao.UserDao">
+<!--结果集-->
+    <resultMap id="userMap" type="com.zhiyou100.model.User" >
+        <id column="user_id" property="userId"  />
+        <result column="is_admin" property="isAdmin" />
+        <result column="is_system" property="isSystem"  />
+        <result column="department_id" property="departmentId" />
+        <result column="role_id" property="roleId" />
+        <result column="is_male" property="isMale"  />
+        <result column="id_num" property="idNum" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+    <sql id="selector">
+		select * from user
+	</sql>
+
+    <!--登录：通过用户名和密码查询-->
+    <select id="login" resultMap="userMap">
+        <include refid="selector"></include> where username=#{username} and password=#{password}
+    </select>
+    <!--通过关键词查询-->
+    <select id="searchByKeyWord" parameterType="User" resultMap="userMap">
+        select user_id,username,department_id,role_id,mobile,email,update_time from user
+        <where>
+            <if test="username!='' and username!=null">
+                and username like #{keyword}
+            </if>
+            <if test="mobile!='' and mobile!=null">
+                and mobile like #{keyword}
+            </if>
+            <if test="address!='' and address!=null">
+                and address like #{keyword}
+            </if>
+        </where>
+    </select>
+<!--新增-->
+    <insert id="save" parameterType="User" >
+        insert into user(username,password,department_id,role_id,is_male,mobile,address,age,tel,id_num,email,create_time,creater) values
+        (#{username},#{password},#{departmentId},#{roleId},#{isMale},#{mobile},#{address},#{age},#{tel},#{idNum},#{email},#{createTime},#{creater})
+    </insert>
+    <!-- 通过ID查询一个用户 -->
+    <select id="findById" parameterType="Integer" resultMap="userMap">
+		select user_id,username,password,department_id,role_id,is_male,mobile,address,age,tel,id_num,email,create_time,creater from user where user_id = #{userId}
+	</select>
+    <!--用户名下拉框-->
+    <select id="selectDown" resultMap="userMap">
+        	select user_id,username from user
+    </select>
+    <!--更新-->
+    <update id="update" parameterType="User">
+		update user
+		set password=#{password},department_id=#{departmentId},role_id=#{roleId},is_male=#{isMale},email=#{email},mobile=#{mobile},address=#{address}, age=#{age},tel=#{tel}
+		where user_id = #{userId}
+	</update>
+    <!--删除-->
+    <delete id="deleteById" parameterType="Integer">
+		delete from user
+		where user_id = #{userId}
+	</delete>
+</mapper>

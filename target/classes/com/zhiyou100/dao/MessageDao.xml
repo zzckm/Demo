@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiyou100.dao.MessageDao">
+<!--结果集-->
+    <resultMap id="messageMap" type="com.zhiyou100.model.Message" >
+        <id column="message_id" property="messageId" jdbcType="INTEGER" />
+        <result column="subject" property="subject" jdbcType="VARCHAR" />
+        <result column="content" property="content" jdbcType="VARCHAR" />
+        <result column="sender" property="sender" jdbcType="INTEGER" />
+        <result column="save_time" property="saveTime" jdbcType="TIMESTAMP" />
+        <result column="send_time" property="sendTime" jdbcType="TIMESTAMP" />
+        <result column="send_delete" property="sendDelete" jdbcType="BIT" />
+        <result column="send_status" property="sendStatus" jdbcType="TINYINT" />
+        <result column="send_update_time" property="sendUpdateTime" jdbcType="TIMESTAMP" />
+        <result column="receiver" property="receiver" jdbcType="INTEGER" />
+        <result column="receive_delete" property="receiveDelete" jdbcType="BIT" />
+        <result column="receive_status" property="receiveStatus" jdbcType="TINYINT" />
+        <result column="receive_update_time" property="receiveUpdateTime" jdbcType="TIMESTAMP" />
+        <!-- 一对一 -->
+        <association property="user" javaType="User">
+            <id column="user_id" property="userId"/>
+            <result column="username" property="username"/>
+        </association>
+    </resultMap>
+    <sql id="selector">
+		select * from message
+	</sql>
+
+    <!--新增 发送-->
+    <insert id="saveNew" parameterType="Message" >
+        insert into message(subject,content,sender,send_time,send_status,receiver,receive_delete,receive_status) values
+        (#{subject},#{content},#{sender},#{sendTime},#{sendStatus},#{receiver},#{receiveDelete},#{receiveStatus})
+    </insert>
+    <!--新增 发送-->
+    <insert id="saveOld" parameterType="Message" >
+        insert into message(subject,content,sender,save_time,send_status,receiver,receive_delete,receive_status) values
+       (#{subject},#{content},#{sender},#{saveTime},#{sendStatus},#{receiver},#{receiveDelete},#{receiveStatus})
+    </insert>
+    <!--通过关键词查询____发件箱-->
+    <select id="searchByKeyWord" parameterType="Message" resultMap="messageMap">
+        select m.message_id,m.subject,m.content,m.send_time,m.receiver,m.send_status,u.username from message as m INNER JOIN user as u on m.receiver=u.user_id where 1=1
+        <choose>
+            <when test="subject!='' and subject!=null">
+                and subject like #{keyword} and send_status=2 and send_delete=2 and sender=#{sender}
+            </when>
+            <when test="content!='' and content!=null">
+                and content like #{keyword} and send_status=2 and send_delete=2 and sender=#{sender}
+            </when>
+            <otherwise>
+                and send_status=2 and send_delete=2 and sender=#{sender}
+            </otherwise>
+        </choose>
+    </select>
+    <!--通过关键词查询____草稿箱-->
+    <select id="searchByKeyWordSave" parameterType="Message" resultMap="messageMap">
+        select m.message_id,m.subject,m.content,m.send_time,m.receiver,m.send_status,u.username from message as m INNER JOIN user as u on m.receiver=u.user_id where 1=1
+        <choose>
+            <when test="subject!='' and subject!=null">
+                and subject like #{keyword} and send_status=0 and send_delete=2 and sender=#{sender}
+            </when>
+            <when test="content!='' and content!=null">
+                and content like #{keyword} and send_status=0 and send_delete=2 and sender=#{sender}
+            </when>
+            <otherwise>
+                and send_status=0 and send_delete=2 and sender=#{sender}
+            </otherwise>
+        </choose>
+    </select>
+    <!--通过关键词查询____垃圾箱-->
+    <select id="searchByKeyWordRemove" parameterType="Message" resultMap="messageMap">
+        select m.message_id,m.subject,m.content,m.send_time,m.receiver,m.send_status,u.username from message as m INNER JOIN user as u on m.receiver=u.user_id where 1=1
+
+        <choose>
+            <when test="subject!='' and subject!=null">
+                and subject like #{keyword} and (send_delete=0 or receive_delete=0) and (sender=#{sender} or receiver=#{sender})
+            </when>
+            <when test="content!='' and content!=null">
+                and content like #{keyword} and (send_delete=0 or receive_delete=0) and (sender=#{sender} or receiver=#{sender})
+            </when>
+            <otherwise>
+                and (send_delete=0 or receive_delete=0) and (sender=#{sender} or receiver=#{sender})
+            </otherwise>
+        </choose>
+    </select>
+    <!--通过关键词查询____收件箱-->
+    <select id="searchByKeyWordRec" parameterType="Message" resultMap="messageMap">
+        select m.message_id,m.subject,m.content,m.send_time,m.receiver,m.send_status,u.username from message as m INNER JOIN user as u on m.sender=u.user_id where 1=1
+        <choose>
+            <when test="subject!='' and subject!=null">
+                and subject like #{keyword} and receiver=#{sender} and receive_delete=2
+            </when>
+            <when test="content!='' and content!=null">
+                and content like #{keyword} and receiver=#{sender} and receive_delete=2
+            </when>
+            <otherwise>
+                and receiver=#{sender} and receive_delete=2
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 通过ID查询一个信件 -->
+    <select id="findById" parameterType="Integer" resultMap="messageMap">
+		select m.message_id,m.subject,m.content,m.send_time,u.username from message as m INNER JOIN user as u on m.receiver=u.user_id where m.message_id=#{messageId}
+	</select>
+    <!-- 通过ID查询一个发送人姓名 -->
+    <select id="findByIdSendName" parameterType="Integer" resultType="String">
+		select u.username from message as m INNER JOIN user as u on m.receiver=u.user_id where m.message_id=#{messageId}
+	</select>
+    <!-- 通过ID查询一个收件人姓名 -->
+    <select id="findByIdReceName" parameterType="Integer" resultType="String">
+		select u.username from message as m INNER JOIN user as u on m.sender=u.user_id where m.message_id=#{messageId}
+	</select>
+    <!--更新- 修改删除状态send_delete=0-->
+    <update id="updateBystatus" parameterType="Message">
+		update message set send_delete=0 where message_id=#{messageId}
+	</update>
+<!--    删除收件箱的数据到垃圾箱中-->
+    <update id="updateByRec" parameterType="Message">
+		update message set receive_delete=0 where message_id=#{messageId}
+	</update>
+    <!--删除-->
+    <delete id="deleteById" parameterType="Integer">
+		delete from message where message_id=#{messageId}
+	</delete>
+</mapper>

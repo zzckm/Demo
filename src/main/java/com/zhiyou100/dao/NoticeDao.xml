@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiyou100.dao.NoticeDao">
+<!--结果集-->
+
+    <sql id="selector">
+		select * from notice
+	</sql>
+
+    <!--通过关键词查询-->
+    <select id="searchByKeyWord" parameterType="Notice" resultType="Notice">
+            select * from notice
+        <where>
+            <if test="subject!='' and subject!=null">
+                and subject like #{keyword}
+            </if>
+            <if test="text!='' and text!=null">
+                and text like #{keyword}
+            </if>
+        </where>
+    </select>
+    <!--新增-->
+    <insert id="add" parameterType="User" >
+       insert into notice( receive_id,subject,text,pub_time,expire_time,status,create_time,creater) values
+        (#{receive_id},#{subject},#{text},#{pub_time},#{expire_time},#{status},#{create_time},#{creater})
+    </insert>
+    <!-- 通过ID查询一个用户 -->
+    <select id="findById" parameterType="Integer" resultType="Notice">
+		select notice_id,receive_id,subject,text,pub_time,expire_time from notice where notice_id=#{notice_id}
+	</select>
+    <!--更新-->
+    <update id="update" parameterType="Notice">
+		update notice
+		set receive_id=#{receive_id},subject=#{subject},text=#{text},pub_time=#{pub_time},expire_time=#{expire_time},update_time=#{update_time},updater=#{updater} where notice_id=#{notice_id}
+	</update>
+    <!--删除-->
+    <delete id="deleteById" parameterType="Integer">
+		delete from notice
+		where notice_id = #{notice_id}
+	</delete>
+
+</mapper>
